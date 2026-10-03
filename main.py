@@ -22,8 +22,6 @@ birthday_dict = {
     key: group
     for key, group in birthday.groupby(["month", "day"])
 }
-# birthday_dict = {(birthday_row["month"], birthday_row["day"]): birthday_row for (index, birthday_row) in birthday.iterrows()}
-# print(birthday_dict)
 
 # ---------------------------- Select Random Letter ------------------------------- #
 def random_letter(bday_name):
@@ -42,8 +40,6 @@ def date_verify():
     today = dt.datetime.now()
     today_tuple = (today.month, today.day)
     return today_tuple
-
-    # date_of_birth = dt.datetime(year= ;month= ;day= ;hour=)
 
 
 # ---------------------------- Generate Email ------------------------------- #
