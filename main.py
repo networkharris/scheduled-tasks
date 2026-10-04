@@ -58,7 +58,10 @@ def gen_email(bday_addr, bday_name, bday_letter):
 
 
 # ---------------------------- Main ------------------------------- #
-bday_person = birthday_dict.get(date_verify())
-
-for(index,row) in bday_person.iterrows():
-    gen_email(bday_addr=row.email, bday_name=row['name'], bday_letter=random_letter(row['name']))
+try:
+    bday_person = birthday_dict.get(date_verify())
+    for (index, row) in bday_person.iterrows():
+        gen_email(bday_addr=row.email, bday_name=row['name'], bday_letter=random_letter(row['name']))
+except AttributeError:
+    print(f"No birthdays today {dt.datetime.now()}. Exiting.")
+    exit(0)
