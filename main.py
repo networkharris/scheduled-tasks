@@ -1,67 +1,63 @@
-# To run and test the code you need to update 4 places:
-# 1. Change MY_EMAIL/MY_PASSWORD to your own details.
-# 2. Go to your email provider and make it allow less secure apps.
-# 3. Update the SMTP ADDRESS to match your email provider.
-# 4. Update birthdays.csv to contain today's month and day.
-# See the solution video in the 100 Days of Python Course for explainations.
-
-
-import datetime as dt
-import pandas as pd
-import random
+import requests
+from datetime import datetime
 import smtplib
-import os
+
+MY_LAT = 51.507351 # Your latitude
+MY_LONG = -0.127758 # Your longitude
 
 # import os and use it to get the Github repository secrets
 MY_EMAIL = os.environ.get("MY_EMAIL")
 MY_PASSWORD = os.environ.get("MY_PASSWORD")
 
-# ---------------------------- Create a Dictionary for Birthdays CSV------------------------------- #
-birthday = pd.read_csv("birthdays.csv")
-birthday_dict = {
-    key: group
-    for key, group in birthday.groupby(["month", "day"])
+
+response = requests.get(url="http://api.open-notify.org/iss-now.json")
+response.raise_for_status()
+data = response.json()
+
+iss_latitude = float(data["iss_position"]["latitude"])
+iss_longitude = float(data["iss_position"]["longitude"])
+
+
+#Your position is within +5 or -5 degrees of the ISS position.
+if (MY_LAT - 5 <= iss_latitude <= MY_LAT + 5) and (MY_LONG - 5 <= iss_longitude <= MY_LONG + 5):
+    print("The satellite is close!")
+    iss_close = True
+else:
+    print("The satellite if far")
+    iss_close = False
+
+parameters = {
+    "lat": MY_LAT,
+    "lng": MY_LONG,
+    "formatted": 0,
 }
 
-# ---------------------------- Select Random Letter ------------------------------- #
-def random_letter(bday_name):
-    path = "./letter_templates/"
-    letter = random.choice(os.listdir(path))
-    rand_path = path + letter
-    with open(rand_path) as file:
-        contents = file.read()
-        new_letter = contents.replace('[NAME]', bday_name)
-    return new_letter
+response = requests.get("https://api.sunrise-sunset.org/json", params=parameters)
+response.raise_for_status()
+data = response.json()
+sunrise = int(data["results"]["sunrise"].split("T")[1].split(":")[0])
+sunset = int(data["results"]["sunset"].split("T")[1].split(":")[0])
 
+time_now = datetime.now()
+my_hour = int(time_now.hour)
 
-# ---------------------------- Check Date and Time ------------------------------- #
-# This function returns an array of names, and emails
-def date_verify():
-    today = dt.datetime.now()
-    today_tuple = (today.month, today.day)
-    return today_tuple
+print(f"My hour: {my_hour} Sunrise {sunrise} Sunset {sunset}")
+if ((my_hour >= sunrise or my_hour <= sunset) and iss_close):
+    print("Look up")
+    my_email = MY_EMAIL
+    password = MY_PASSWORD
 
-
-# ---------------------------- Generate Email ------------------------------- #
-
-def gen_email(bday_addr, bday_name, bday_letter):
-    my_email = "b6800528@gmail.com"
-    password = "wwqlhlkddidsjpki"
-
+    connection = smtplib.SMTP("smtp.gmail.com",port=587)
     with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
         connection.starttls()
-        connection.login(user=MY_EMAIL, password=MY_PASSWORD)
-        connection.sendmail(from_addr=MY_EMAIL,
-                            to_addrs=bday_addr,
-                            msg=f"Subject:Happy Birthday! {bday_name}\n\n{bday_letter}"
+        connection.login(user=my_email, password=password)
+        connection.sendmail(from_addr=my_email,
+                            to_addrs="btitely@yahoo.com",
+                            msg=f"Subject:ISS is Overhead\n\n{"Look up for the Satellite!"}."
                             )
+    connection.close()
 
-
-# ---------------------------- Main ------------------------------- #
-try:
-    bday_person = birthday_dict.get(date_verify())
-    for (index, row) in bday_person.iterrows():
-        gen_email(bday_addr=row.email, bday_name=row['name'], bday_letter=random_letter(row['name']))
-except AttributeError:
-    print(f"No birthdays today {dt.datetime.now()}. Exiting.")
-    exit(0)
+#If the ISS is close to my current position (Get My position)
+# and it is currently dark (Time is greater than or equal to that sunset)
+# Then send me an email to tell me to look up. (Generate Email function)
+# BONUS: run the code every 60 seconds. (Github Action)
