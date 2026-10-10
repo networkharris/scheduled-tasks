@@ -8,7 +8,7 @@ MY_LONG = -0.127758 # Your longitude
 # import os and use it to get the Github repository secrets
 MY_EMAIL = os.environ.get("MY_EMAIL")
 MY_PASSWORD = os.environ.get("MY_PASSWORD")
-
+MY_RECEIVE = os.environ.get("MY_RECEIVE")
 
 response = requests.get(url="http://api.open-notify.org/iss-now.json")
 response.raise_for_status()
@@ -52,7 +52,7 @@ if ((my_hour >= sunrise or my_hour <= sunset) and iss_close):
         connection.starttls()
         connection.login(user=my_email, password=password)
         connection.sendmail(from_addr=my_email,
-                            to_addrs="btitely@yahoo.com",
+                            to_addrs=MY_RECEIVE,
                             msg=f"Subject:ISS is Overhead\n\n{"Look up for the Satellite!"}."
                             )
     connection.close()
