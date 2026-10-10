@@ -1,4 +1,4 @@
-import requests
+from requests import requests
 from datetime import datetime
 import smtplib
 
