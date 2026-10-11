@@ -43,7 +43,7 @@ time_now = datetime.now()
 my_hour = int(time_now.hour)
 
 print(f"My hour: {my_hour} Sunrise {sunrise} Sunset {sunset}")
-if ((my_hour >= sunrise or my_hour <= sunset) and iss_close):
+if ((my_hour <= sunrise or my_hour >= sunset) and iss_close):
     print("Look up")
     my_email = MY_EMAIL
     password = MY_PASSWORD
